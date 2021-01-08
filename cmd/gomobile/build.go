@@ -373,9 +373,13 @@ func parseBuildTarget(buildTarget string) (os string, archs []string, _ error) {
 	if os == "ios" {
 		targetOS = "darwin"
 		if supports32bitsArchs() {
-			return targetOS, []string{"arm", "arm64", "amd64", "simArm64"}, nil
+			return targetOS, []string{"arm", "arm64", "amd64"}, nil
 		}
-		return targetOS, []string{"arm64", "amd64", "simArm64"}, nil
+		return targetOS, []string{"arm64", "amd64"}, nil
+	}
+	if os == "sim-arm64" {
+		targetOS = "darwin"
+		return targetOS, []string{"sim-arm64"}, nil
 	}
 	if os == "android" {
 		return targetOS, []string{"arm", "arm64", "386", "amd64"}, nil
