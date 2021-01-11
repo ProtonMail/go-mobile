@@ -379,7 +379,7 @@ func parseBuildTarget(buildTarget string) (os string, archs []string, _ error) {
 	}
 	if os == "ios-simulator" {
 		targetOS = "darwin"
-		return targetOS, []string{"arm64, amd64"}, nil
+		return targetOS, []string{"sim-arm64", "sim-amd64"}, nil
 	}
 	if os == "android" {
 		return targetOS, []string{"arm", "arm64", "386", "amd64"}, nil
