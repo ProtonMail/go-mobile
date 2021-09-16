@@ -167,7 +167,9 @@ func envInit() (err error) {
 				"CC=" + clang,
 				"CXX=" + clangpp,
 				"CGO_ENABLED=1",
+				"CGO_CFLAGS=-fstack-protector-strong",
 			}
+
 			if arch == "arm" {
 				androidEnv[arch] = append(androidEnv[arch], "GOARM=7")
 			}
@@ -243,12 +245,13 @@ func envInit() (err error) {
 		if bitcodeEnabled {
 			cflags += " -fembed-bitcode"
 		}
+
 		env = append(env,
 			"GOOS=darwin",
 			"GOARCH="+archNew,
 			"CC="+clang,
 			"CXX="+clang+"++",
-			"CGO_CFLAGS="+cflags+" -arch "+archClang(archNew),
+			"CGO_CFLAGS="+cflags+" -arch "+archClang(archNew)+" -fstack-protector-strong",
 			"CGO_CXXFLAGS="+cflags+" -arch "+archClang(archNew),
 			"CGO_LDFLAGS="+cflags+" -arch "+archClang(archNew),
 			"CGO_ENABLED=1",
