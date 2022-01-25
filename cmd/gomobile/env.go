@@ -185,6 +185,7 @@ func envInit() (err error) {
 				"CC=" + clang,
 				"CXX=" + clangpp,
 				"CGO_ENABLED=1",
+				"CGO_CFLAGS=-fstack-protector-strong",
 			}
 			if arch == "arm" {
 				androidEnv[arch] = append(androidEnv[arch], "GOARM=7")
@@ -269,7 +270,7 @@ func envInit() (err error) {
 				"CXX="+clang+"++",
 				"CGO_CFLAGS="+cflags+" -arch "+archClang(arch),
 				"CGO_CXXFLAGS="+cflags+" -arch "+archClang(arch),
-				"CGO_LDFLAGS="+cflags+" -arch "+archClang(arch),
+				"CGO_CFLAGS="+cflags+" -arch "+archClang(arch)+" -fstack-protector-strong",
 				"CGO_ENABLED=1",
 				"DARWIN_SDK="+sdk,
 			)
