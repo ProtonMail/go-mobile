@@ -271,6 +271,7 @@ func envInit() (err error) {
 				"CGO_CFLAGS="+cflags+" -arch "+archClang(arch),
 				"CGO_CXXFLAGS="+cflags+" -arch "+archClang(arch),
 				"CGO_CFLAGS="+cflags+" -arch "+archClang(arch)+" -fstack-protector-strong",
+				"CGO_LDFLAGS="+cflags+" -arch "+archClang(arch),
 				"CGO_ENABLED=1",
 				"DARWIN_SDK="+sdk,
 			)
