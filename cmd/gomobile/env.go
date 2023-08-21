@@ -204,18 +204,26 @@ func envInit() (err error) {
 			var env []string
 			var goos, sdk, clang, cflags string
 			var err error
+			var minIOSVersion = ""
+			var minMacOSVersion = ""
 			switch platform {
 			case "ios":
 				goos = "ios"
 				sdk = "iphoneos"
 				clang, cflags, err = envClang(sdk)
-				cflags += " -miphoneos-version-min=" + buildIOSVersion
+				if buildIOSVersion != "" {
+					cflags += " -miphoneos-version-min=" + buildIOSVersion
+					minIOSVersion = buildIOSVersion
+				}
 				cflags += " -fembed-bitcode"
 			case "iossimulator":
 				goos = "ios"
 				sdk = "iphonesimulator"
 				clang, cflags, err = envClang(sdk)
-				cflags += " -mios-simulator-version-min=" + buildIOSVersion
+				if buildIOSVersion != "" {
+					cflags += " -mios-simulator-version-min=" + buildIOSVersion
+					minIOSVersion = buildIOSVersion
+				}
 				cflags += " -fembed-bitcode"
 			case "maccatalyst":
 				// Mac Catalyst is a subset of iOS APIs made available on macOS
@@ -254,6 +262,10 @@ func envInit() (err error) {
 				if arch == "arm64" {
 					cflags += " -fembed-bitcode"
 				}
+				if buildMacOSVersion != "" {
+					cflags += " -mmacosx-version-min=" + buildMacOSVersion
+					minMacOSVersion = buildMacOSVersion
+				}
 			default:
 				panic(fmt.Errorf("unknown Apple target: %s/%s", platform, arch))
 			}
@@ -275,6 +287,16 @@ func envInit() (err error) {
 				"CGO_ENABLED=1",
 				"DARWIN_SDK="+sdk,
 			)
+			if minIOSVersion != "" {
+				env = append(env,
+					"IPHONEOS_DEPLOYMENT_TARGET="+minIOSVersion,
+				)
+			}
+			if minMacOSVersion != "" {
+				env = append(env,
+					"MACOSX_DEPLOYMENT_TARGET="+minMacOSVersion,
+				)
+			}
 			appleEnv[platform+"/"+arch] = env
 		}
 	}
