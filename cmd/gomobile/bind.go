@@ -25,7 +25,7 @@ import (
 var cmdBind = &command{
 	run:   runBind,
 	Name:  "bind",
-	Usage: "[-target android|" + strings.Join(applePlatforms, "|") + "] [-bootclasspath <path>] [-classpath <path>] [-o output] [build flags] [package]",
+	Usage: "[-target android|" + strings.Join(applePlatforms, "|") + "] [-bootclasspath <path>] [-external <path>] [-classpath <path>] [-o output] [build flags] [package]",
 	Short: "build a library for Android and iOS",
 	Long: `
 Bind generates language bindings for the package named by the import
@@ -64,6 +64,11 @@ control the bootstrap classpath and the classpath for Go wrappers to Java
 classes.
 
 The -v flag provides verbose output, including the list of packages built.
+
+The -external flag is used to specify a custom cgo api that should be included 
+in the dynamic libraries (android only). This is useful if multiple go libraries are used in 
+the same project (i.e., multiple go runtime issue). 
+The main function must be in a seperate main.go file or exluded.
 
 The build flags -a, -n, -x, -gcflags, -ldflags, -tags, -trimpath, and -work
 are shared with the build command. For documentation, see 'go help build'.
@@ -127,7 +132,7 @@ func runBind(cmd *command) error {
 
 	switch {
 	case isAndroidPlatform(targets[0].platform):
-		return goAndroidBind(gobind, pkgs, targets)
+		return goAndroidBind(gobind, pkgs, targets, buildExternal)
 	case isApplePlatform(targets[0].platform):
 		if !xcodeAvailable() {
 			return fmt.Errorf("-target=%q requires Xcode", buildTarget)

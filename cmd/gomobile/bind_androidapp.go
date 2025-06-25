@@ -19,7 +19,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-func goAndroidBind(gobind string, pkgs []*packages.Package, targets []targetInfo) error {
+func goAndroidBind(gobind string, pkgs []*packages.Package, targets []targetInfo, buildExternal string) error {
 	if _, err := sdkpath.AndroidHome(); err != nil {
 		return fmt.Errorf("this command requires the Android SDK to be installed: %w", err)
 	}
@@ -53,6 +53,13 @@ func goAndroidBind(gobind string, pkgs []*packages.Package, targets []targetInfo
 
 	androidDir := filepath.Join(tmpdir, "android")
 
+	if buildExternal != "" {
+		goApiDir := filepath.Join(tmpdir, "src", "gobind")
+		if err := copyExternalFiles(buildExternal, goApiDir); err != nil {
+			return fmt.Errorf("failed to copy external files: %w", err)
+		}
+	}
+
 	// Generate binding code and java source code only when processing the first package.
 	var wg errgroup.Group
 	for _, t := range targets {
@@ -70,6 +77,46 @@ func goAndroidBind(gobind string, pkgs []*packages.Package, targets []targetInfo
 		return err
 	}
 	return buildSrcJar(jsrc)
+}
+
+func copyExternalFiles(src, dst string) error {
+	fmt.Fprintf(os.Stderr, "source: %s\n", src)
+	entries, err := os.ReadDir(src)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range entries {
+		ext := filepath.Ext(entry.Name())
+		isDir := entry.IsDir()
+		isMain := entry.Name() == "main.go"
+		isApiFile := ext == ".go" || ext == ".h" || ext == ".c"
+		if !isDir && !isMain && isApiFile {
+			fromFile := filepath.Join(src, entry.Name())
+			dstFile := filepath.Join(dst, entry.Name())
+			if err := copyFileContent(fromFile, dstFile); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func copyFileContent(src, dst string) error {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	dstFile, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+
+	_, err = io.Copy(dstFile, srcFile)
+	return err
 }
 
 func buildSrcJar(src string) error {

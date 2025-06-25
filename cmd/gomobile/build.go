@@ -242,6 +242,7 @@ var (
 	buildGcflags      string      // -gcflags
 	buildLdflags      string      // -ldflags
 	buildTarget       string      // -target
+	buildExternal     string      // -external
 	buildTrimpath     bool        // -trimpath
 	buildWork         bool        // -work
 	buildBundleID     string      // -bundleid
@@ -258,6 +259,7 @@ func addBuildFlags(cmd *command) {
 	cmd.flag.StringVar(&buildGcflags, "gcflags", "", "")
 	cmd.flag.StringVar(&buildLdflags, "ldflags", "", "")
 	cmd.flag.StringVar(&buildTarget, "target", "android", "")
+	cmd.flag.StringVar(&buildExternal, "external", "", "")
 	cmd.flag.StringVar(&buildBundleID, "bundleid", "", "")
 	cmd.flag.StringVar(&buildIOSVersion, "iosversion", "13.0", "")
 	cmd.flag.StringVar(&buildTVOSVersion, "tvosversion", "13.0", "")
