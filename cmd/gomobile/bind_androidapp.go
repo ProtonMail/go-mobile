@@ -80,7 +80,6 @@ func goAndroidBind(gobind string, pkgs []*packages.Package, targets []targetInfo
 }
 
 func copyExternalFiles(src, dst string) error {
-	fmt.Fprintf(os.Stderr, "source: %s\n", src)
 	entries, err := os.ReadDir(src)
 	if err != nil {
 		return err
@@ -94,6 +93,7 @@ func copyExternalFiles(src, dst string) error {
 		if !isDir && !isMain && isApiFile {
 			fromFile := filepath.Join(src, entry.Name())
 			dstFile := filepath.Join(dst, entry.Name())
+			fmt.Fprintf(os.Stderr, "copying to cgo api:%s\n", fromFile)
 			if err := copyFileContent(fromFile, dstFile); err != nil {
 				return err
 			}
