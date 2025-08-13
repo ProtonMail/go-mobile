@@ -137,7 +137,7 @@ func runBind(cmd *command) error {
 		if !xcodeAvailable() {
 			return fmt.Errorf("-target=%q requires Xcode", buildTarget)
 		}
-		return goAppleBind(gobind, pkgs, targets)
+		return goAppleBind(gobind, pkgs, targets, buildExternal)
 	default:
 		return fmt.Errorf(`invalid -target=%q`, buildTarget)
 	}
@@ -358,4 +358,44 @@ func areGoModulesUsed() (bool, error) {
 		areGoModulesUsedResult.used = outstr != ""
 	})
 	return areGoModulesUsedResult.used, areGoModulesUsedResult.err
+}
+
+func copyExternalFiles(src, dst string) error {
+	entries, err := os.ReadDir(src)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range entries {
+		ext := filepath.Ext(entry.Name())
+		isDir := entry.IsDir()
+		isMain := entry.Name() == "main.go"
+		isApiFile := ext == ".go" || ext == ".h" || ext == ".c"
+		if !isDir && !isMain && isApiFile {
+			fromFile := filepath.Join(src, entry.Name())
+			dstFile := filepath.Join(dst, entry.Name())
+			fmt.Fprintf(os.Stderr, "copying to cgo api:%s\n", fromFile)
+			if err := copyFileContent(fromFile, dstFile); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func copyFileContent(src, dst string) error {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	dstFile, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+
+	_, err = io.Copy(dstFile, srcFile)
+	return err
 }

@@ -21,7 +21,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-func goAppleBind(gobind string, pkgs []*packages.Package, targets []targetInfo) error {
+func goAppleBind(gobind string, pkgs []*packages.Package, targets []targetInfo, buildExternal string) error {
 	var name string
 	var title string
 
@@ -77,6 +77,13 @@ func goAppleBind(gobind string, pkgs []*packages.Package, targets []targetInfo) 
 			}
 			if err := runCmd(cmd); err != nil {
 				return err
+			}
+
+			if buildExternal != "" {
+				goApiDir := filepath.Join(outDir, "src", "gobind")
+				if err := copyExternalFiles(buildExternal, goApiDir); err != nil {
+					return fmt.Errorf("failed to copy external files: %w", err)
+				}
 			}
 			return nil
 		})
