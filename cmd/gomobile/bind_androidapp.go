@@ -19,7 +19,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-func goAndroidBind(gobind string, pkgs []*packages.Package, targets []targetInfo) error {
+func goAndroidBind(gobind string, pkgs []*packages.Package, targets []targetInfo, buildExternal string) error {
 	if _, err := sdkpath.AndroidHome(); err != nil {
 		return fmt.Errorf("this command requires the Android SDK to be installed: %w", err)
 	}
@@ -52,6 +52,13 @@ func goAndroidBind(gobind string, pkgs []*packages.Package, targets []targetInfo
 	}
 
 	androidDir := filepath.Join(tmpdir, "android")
+
+	if buildExternal != "" {
+		goApiDir := filepath.Join(tmpdir, "src", "gobind")
+		if err := copyExternalFiles(buildExternal, goApiDir); err != nil {
+			return fmt.Errorf("failed to copy external files: %w", err)
+		}
+	}
 
 	// Generate binding code and java source code only when processing the first package.
 	var wg errgroup.Group
